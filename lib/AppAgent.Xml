@@ -1,0 +1,407 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AppAgent</name>
+    </assembly>
+    <members>
+        <member name="T:Taobao.Infrastructure.AppAgents.DefaultAgent">
+            <summary>
+            为windows平台的应用默认的Agent实现
+            <remarks>
+            基于NamePipe（IPC）和MailSlot（To Master）实现通信
+            仅用于app管理以及进程通信，并非为高性能通信设计
+            PS：
+            NamePipe仅使用FIFO方式收发消息
+            INTERVAL=5000ms
+            BUFFER_SIZE=4096
+            
+            当前的Agent实现设计并没有良好设计抽象，需需要支持多种协议则需考虑对writer进行抽象：）
+            </remarks>
+            </summary> 
+        </member>
+        <member name="T:Taobao.Infrastructure.AppAgents.IAgent">
+            <summary>
+            应用管理Agent
+            <remarks>
+            用于对应用进行进程级别管理，提供IPC功能等
+            主要场景：本地缓存管理，配置管理，应用心跳，应用shell管理功能
+            </remarks>
+            </summary>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.IAgent.Run">
+            <summary>
+            启动
+            </summary>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.IAgent.Stop">
+            <summary>
+            停止
+            </summary>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.IAgent.Broadcast(System.String)">
+            <summary>
+            向当前网络环境广播消息
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="P:Taobao.Infrastructure.AppAgents.IAgent.Name">
+            <summary>
+            获取Agent节点名
+            </summary>
+        </member>
+        <member name="P:Taobao.Infrastructure.AppAgents.IAgent.Master">
+            <summary>
+            获取指向的Master节点
+            </summary>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultAgent.#ctor(Taobao.Infrastructure.Services.ILoggerFactory,System.String,System.String,System.String,Taobao.Infrastructure.AppAgents.IMessageHandle)">
+            <summary>
+            初始化agent
+            </summary>
+            <param name="factory"></param>
+            <param name="master">指定master server，若为空则忽略</param>
+            <param name="name">agent节点名</param>
+            <param name="description">agent节点描述</param>
+            <param name="handle"></param>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultAgent.#ctor(Taobao.Infrastructure.ILog,System.String,System.String,System.String,Taobao.Infrastructure.AppAgents.IMessageHandle)">
+            <summary>
+            初始化agent
+            </summary>
+            <param name="log"></param>
+            <param name="master">指定master server，若为空则忽略</param>
+            <param name="name">agent节点名</param>
+            <param name="description">agent节点描述</param>
+            <param name="handle"></param>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultAgent.Run">
+            <summary>
+            启动节点
+            </summary>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultAgent.Stop">
+            <summary>
+            停止节点
+            </summary>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultAgent.GetWriter">
+            <summary>
+            获取当前可用的TextWriter，若没有则返回Null
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Taobao.Infrastructure.AppAgents.DefaultAgentHandlerLog">
+            <summary>
+            为默认的Agent实现提供对日志输出的截获并输出到外部流
+            <remarks>为简化使用而设计</remarks>
+            </summary>
+        </member>
+        <member name="T:Taobao.Infrastructure.LogWrapper">
+            <summary>
+            对ILog的decorator，可用于简化常见ILog整合进统一log的快速实现
+            如：class ZooKeeperLogger:Logger,ZooKeeperNet.ILog{}
+            <remarks>可继承此类扩展，用于简化ILog抽象</remarks>
+            </summary>
+        </member>
+        <member name="T:Taobao.Infrastructure.ILog">
+            <summary>
+            日志记录器
+            日志记录请总是使用此类
+            </summary>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.Debug(System.Object)">
+            <summary>
+            记录调试信息
+            </summary>
+            <param name="message">内容格式</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.DebugFormat(System.String,System.Object[])">
+            <summary>
+            记录调试信息
+            </summary>
+            <param name="format">内容格式</param>
+            <param name="args">参数</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.Debug(System.Object,System.Exception)">
+            <summary>
+            记录调试信息
+            </summary>
+            <param name="message">错误内容</param>
+            <param name="exception">异常</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.Info(System.Object)">
+            <summary>
+            记录信息
+            </summary>
+            <param name="message">错误内容</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.InfoFormat(System.String,System.Object[])">
+            <summary>
+            记录信息
+            </summary>
+            <param name="format">内容格式</param>
+            <param name="args">参数</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.Info(System.Object,System.Exception)">
+            <summary>
+            记录信息
+            </summary>
+            <param name="message">错误内容</param>
+            <param name="exception">异常</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.Warn(System.Object)">
+            <summary>
+            记录警告
+            </summary>
+            <param name="message">内容格式</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.WarnFormat(System.String,System.Object[])">
+            <summary>
+            记录警告
+            </summary>
+            <param name="format">内容格式</param>
+            <param name="args">参数</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.Warn(System.Object,System.Exception)">
+            <summary>
+            记录警告
+            </summary>
+            <param name="message">错误内容</param>
+            <param name="exception">异常</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.Error(System.Object)">
+            <summary>
+            记录错误
+            </summary>
+            <param name="message">内容格式</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.ErrorFormat(System.String,System.Object[])">
+            <summary>
+            记录错误
+            </summary>
+            <param name="format">内容格式</param>
+            <param name="args">参数</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.Error(System.Object,System.Exception)">
+            <summary> 
+            记录错误
+            </summary>
+            <param name="message">错误内容</param>
+            <param name="exception">异常</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.Fatal(System.Object)">
+            <summary>
+            记录致命错误
+            </summary>
+            <param name="message">内容格式</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.FatalFormat(System.String,System.Object[])">
+            <summary>
+            记录致命错误
+            </summary>
+            <param name="format">内容格式</param>
+            <param name="args">参数</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.ILog.Fatal(System.Object,System.Exception)">
+            <summary> 
+            记录致命错误
+            </summary>
+            <param name="message">错误内容</param>
+            <param name="exception">异常</param>
+        </member>
+        <member name="P:Taobao.Infrastructure.ILog.IsDebugEnabled">
+            <summary>
+            是否启用Debug级别
+            </summary>
+        </member>
+        <member name="P:Taobao.Infrastructure.ILog.IsErrorEnabled">
+            <summary>
+            是否启用Error级别
+            </summary>
+        </member>
+        <member name="P:Taobao.Infrastructure.ILog.IsFatalEnabled">
+            <summary>
+            是否启用Fatal级别
+            </summary>
+        </member>
+        <member name="P:Taobao.Infrastructure.ILog.IsInfoEnabled">
+            <summary>
+            是否启用Info级别
+            </summary>
+        </member>
+        <member name="P:Taobao.Infrastructure.ILog.IsWarnEnabled">
+            <summary>
+            是否启用Warn级别
+            </summary>
+        </member>
+        <member name="M:Taobao.Infrastructure.LogWrapper.#ctor(Taobao.Infrastructure.ILog)">
+            <summary>
+            初始化
+            </summary>
+            <param name="log"></param>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultAgentHandlerLog.#ctor(Taobao.Infrastructure.ILog)">
+            <summary>
+            初始化为默认的Agent实现提供对日志输出的截获并输出到外部流
+            </summary>
+            <param name="log"></param>
+        </member>
+        <member name="T:Taobao.Infrastructure.AppAgents.DefaultHandle">
+            <summary>
+            实现了默认的进程消息处理
+            </summary>
+        </member>
+        <member name="T:Taobao.Infrastructure.AppAgents.IMessageHandle">
+            <summary>
+            消息处理器
+            <remarks>仅为默认的agent实现提供</remarks>
+            </summary>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.IMessageHandle.Handle(System.String,System.IO.StreamWriter)">
+            <summary>
+            处理消息
+            </summary>
+            <param name="msg">消息文本</param>
+            <param name="writer">当前可用的Agent Writer</param>
+        </member>
+        <member name="T:Taobao.Infrastructure.AppAgents.DefaultMaster">
+            <summary>
+            默认的简易Master实现
+            <remarks>
+            基于NamePipe和MailSlot实现通信
+            支持对注册到此Master的AppAgent的管理以及消息广播功能
+            PS:检查时间
+            </remarks>
+            </summary>
+        </member>
+        <member name="F:Taobao.Infrastructure.AppAgents.DefaultMaster.Name">
+            <summary>
+            默认的Master名称
+            </summary>
+        </member>
+        <member name="F:Taobao.Infrastructure.AppAgents.DefaultMaster.HeartbeatCmd">
+            <summary>
+            向agent发送的心跳命令文本
+            </summary>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultMaster.#ctor(Taobao.Infrastructure.Services.ILoggerFactory)">
+            <summary>
+            初始化
+            </summary>
+            <param name="factory"></param>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultMaster.#ctor(Taobao.Infrastructure.Services.ILoggerFactory,System.Action{System.String,System.IO.StreamWriter})">
+            <summary>
+            初始化
+            </summary>
+            <param name="factory"></param>
+            <param name="handle">定义命令处理，PS:避免writeline()空内容会导致pipe broken</param>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultMaster.GetAgents">
+            <summary>
+            获取所有注册到此Master的Agent信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultMaster.Broadcast(System.String)">
+            <summary>
+            向agent节点广播消息
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultMaster.Send(Taobao.Infrastructure.ILog,System.String,System.String,System.String)">
+            <summary>
+            向指定Agent节点发送消息 Block
+            </summary>
+            <param name="log">输出程序，可为其实现console输出或流输出</param>
+            <param name="server">目标主机</param>
+            <param name="agent">目标节点名</param>
+            <param name="message">消息</param>
+            <returns></returns>
+            <exception cref="T:System.TimeoutException"></exception>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultMaster.Send(Taobao.Infrastructure.ILog,System.String,System.String,System.String,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            向指定Agent节点发送消息
+            </summary>
+            <param name="log">输出程序，可为其实现console输出或流输出</param>
+            <param name="server">目标主机</param>
+            <param name="agent">目标节点名</param>
+            <param name="message">消息</param>
+            <param name="connectTimeout">连接超时设置</param>
+            <param name="readTimeout">读超时</param>
+            <param name="writeTimeout">写超时</param>
+            <returns></returns>
+        </member>
+        <member name="T:Taobao.Infrastructure.AppAgents.DefaultMaster.Agent">
+            <summary>
+            Agent节点信息
+            <remarks>作为心跳信息内容</remarks>
+            </summary>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultMaster.Agent.ToString">
+            <summary>
+            返回形如：server|name|description的心跳消息文本
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultMaster.Agent.FromMessage(System.String)">
+            <summary>
+            从消息文本创建对象
+            </summary>
+            <param name="msg"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Taobao.Infrastructure.AppAgents.DefaultMaster.Agent.Server">
+            <summary>
+            服务器名称
+            </summary>
+        </member>
+        <member name="P:Taobao.Infrastructure.AppAgents.DefaultMaster.Agent.Name">
+            <summary>
+            节点名称
+            </summary>
+        </member>
+        <member name="P:Taobao.Infrastructure.AppAgents.DefaultMaster.Agent.Description">
+            <summary>
+            节点描述
+            </summary>
+        </member>
+        <member name="P:Taobao.Infrastructure.AppAgents.DefaultMaster.Agent.Path">
+            <summary>
+            节点运行路径
+            </summary>
+        </member>
+        <member name="T:Taobao.Infrastructure.AppAgents.DefaultMaster.MasterMessageHandle">
+            <summary>
+            提供Master节点消息处理功能
+            </summary>
+        </member>
+        <member name="M:Taobao.Infrastructure.AppAgents.DefaultMaster.MasterMessageHandle.#ctor(Taobao.Infrastructure.AppAgents.DefaultMaster,System.Action{System.String,System.IO.StreamWriter})">
+            <summary>
+            初始化
+            </summary>
+            <param name="master"></param>
+            <param name="handle">允许设置额外的命令扩展委托</param>
+        </member>
+        <member name="T:Taobao.Infrastructure.Services.ILoggerFactory">
+            <summary> 
+            提供日志记录器的创建
+            </summary>
+        </member>
+        <member name="M:Taobao.Infrastructure.Services.ILoggerFactory.Create(System.String)">
+            <summary>
+            创建Log
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Taobao.Infrastructure.Services.ILoggerFactory.Create(System.Type)">
+            <summary>
+            创建Log
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

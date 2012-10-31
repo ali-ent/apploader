@@ -29,7 +29,7 @@ using System.Threading;
 
 using Taobao.Infrastructure.Toolkit.AppDomains;
 using Taobao.Infrastructure;
-//using Taobao.Infrastructure.AppAgents;
+using Taobao.Infrastructure.AppAgents;
 
 namespace Apploader.Console
 {
@@ -130,32 +130,35 @@ namespace Apploader.Console
             //配置初始化
             log4net.Config.XmlConfigurator.Configure();
             //特化的log
-            _log = new Log4NetLogger(log4net.LogManager.GetLogger(typeof(Program)));
-            //new DefaultAgentHandlerLog(new Log4NetLogger(log4net.LogManager.GetLogger(typeof(Program))));
-            _loader = new AppDomainLoader(root, _log);
+            var log = new Log4NetLogger(log4net.LogManager.GetLogger(typeof(Program)));
+            Program._log = new AgentHandlerLog(log);
+            
+            _loader = new AppDomainLoader(root, Program._log);
             WriteTip("开始扫描发布目录：" + ConfigurationManager.AppSettings["serviceRoot"], true);
             _loader.Scan();
             WriteTip("扫描完毕", true);
 
             if (!Convert.ToBoolean(ConfigurationManager.AppSettings["appAgent_enable"])) return;
 
-            /*
             //激活AppAgent
             WriteTip("启用AppAgent", true);
-            new DefaultAgent(new Log4NetLoggerFactory()
+            new DefaultAgent(log
                 , ConfigurationManager.AppSettings["appAgent_master"]
                 , ConfigurationManager.AppSettings["appAgent_name"]
                 , ConfigurationManager.AppSettings["appAgent_description"]
                 , new CommandHandle())
-                .Run();*/
+                .Run();
         }
         public static void Stop()
         {
             _loader.Clear();
         }
-
-        /*
-        //管理命令
+        //log类型适配并使其支持appagent输出
+        class AgentHandlerLog : DefaultAgentHandlerLog, Apploader.ILog
+        {
+            public AgentHandlerLog(Taobao.Infrastructure.ILog log) : base(log) { }
+        }
+        //apploader管理命令实现
         class CommandHandle : IMessageHandle
         {
             private static readonly StringComparison _comparison = StringComparison.InvariantCultureIgnoreCase;
@@ -193,7 +196,7 @@ namespace Apploader.Console
             #endregion
 
             private void List(StreamWriter writer, params string[] args)
-            { 
+            {
                 _loader.GetAppPaths().ToList().ForEach(o => { writer.WriteLine(o); writer.Flush(); });
             }
             private void Scan(StreamWriter writer, params string[] args)
@@ -228,6 +231,5 @@ namespace Apploader.Console
                 _loader.Unload(app);
             }
         }
-         */
     }
 }

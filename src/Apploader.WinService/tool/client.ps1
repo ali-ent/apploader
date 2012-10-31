@@ -16,8 +16,8 @@ function Call-Agent($s,$n,$msg){
 }
 
 #sample
-Call-Agent 'taobao-wf-dev01' 'apploader' ''
-#Call-Agent 'taobao-wf-dev01' 'apploader' 'list'
-#Call-Agent 'taobao-wf-dev01' 'apploader' 'refresh'
-#Call-Agent 'taobao-wf-dev01' 'apploader' 'scan'
-#Call-Agent 'taobao-wf-dev01' 'apploader' 'reload dir'
+Call-Agent 'localhost' 'apploader' ''
+Call-Agent 'localhost' 'apploader' 'list'
+#Call-Agent 'localhost' 'apploader' 'refresh'
+#Call-Agent 'localhost' 'apploader' 'scan'
+#Call-Agent 'localhost' 'apploader' 'reload dir'

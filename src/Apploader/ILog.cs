@@ -23,7 +23,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Taobao.Infrastructure
+namespace Apploader
+//namespace Taobao.Infrastructure
 {
     /// <summary>
     /// 日志记录器

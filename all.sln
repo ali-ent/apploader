@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{3A1A
 		build.bat = build.bat
 		nant.build = nant.build
 		README.md = README.md
+		run.ps1 = run.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{4AF34502-DDAE-489D-883A-B87BF867D267}"

@@ -21,6 +21,13 @@
 
   <target name="apploader" description="apploader">
     <exec program="${msbuild}"
+          commandline="${msbuild.params} ${msbuild.params.output}\lib
+          /p:DocumentationFile=${build.absolutepath}\Apploader.Xml"
+          workingdir="${dir}\src\Apploader" />
+    <exec program="${msbuild}"
+          commandline="${msbuild.params} ${msbuild.params.output}\apploader"
+          workingdir="${dir}\src\Apploader.WinService" />
+    <exec program="${msbuild}"
           commandline="${msbuild.params} ${msbuild.params.output}\apploader"
           workingdir="${dir}\src\Apploader.WinService" />
     <delete dir="${build.absolutepath}\apploader\bin" />
@@ -33,10 +40,12 @@
         <include name="${build.absolutepath}\apploader\*.application" />
       </fileset>
     </delete>
-    <!--<zip zipfile="${build.absolutepath}\apploader.zip">
-      <fileset basedir="${build.absolutepath}\apploader">
-        <include name="**/*" />
-      </fileset>
-    </zip>-->
+    <!--demo-->
+    <exec program="${msbuild}"
+          commandline="${msbuild.params} ${msbuild.params.output}\demo\app"
+          workingdir="${dir}\samples\DemoApp" />
+    <xmlpoke file="${build.absolutepath}\apploader\Apploader.Console.exe.config"
+             xpath="/configuration/appSettings/add[@key='serviceRoot']/@value"
+             value="${build.absolutepath}\demo" />
   </target>
 </project>

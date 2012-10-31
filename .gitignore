@@ -4,7 +4,7 @@ obj
 
 # mstest test results
 TestResults
-
+KeekAlive
 build
 packages
 *.suo

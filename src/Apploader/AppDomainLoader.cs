@@ -28,6 +28,7 @@ using System.Security.Policy;
 using System.Security;
 using System.Security.Permissions;
 using System.Threading;
+using Apploader;
 
 namespace Taobao.Infrastructure.Toolkit.AppDomains
 {
@@ -269,8 +270,8 @@ namespace Taobao.Infrastructure.Toolkit.AppDomains
         {
             try
             {
-                //HACK:指定Facade的程序集
-                app.Utility = app.Domain.CreateInstanceAndUnwrap("Apploader"//"Taobao.Infrastructure.Toolkit"
+                //HACK:指定Facade的程序集Apploader，若合并编译需调整此处程序集名称或调整为外部注入
+                app.Utility = app.Domain.CreateInstanceAndUnwrap("Apploader"
                     , typeof(Facade).FullName) as Facade;
             }
             catch (Exception e)
