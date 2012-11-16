@@ -50,7 +50,9 @@ the setting is the root of apps folder.
 
 
 
-If you want to support .net2/3/3.5 via CLR2.0, you can change the project's target to .net3.5
+If you want to support .net2/3/3.5 via CLR2.0, you can change the project's target to .net3.5.
+
+also you can use tools\apploader.zip directly.
 
 ## License
 

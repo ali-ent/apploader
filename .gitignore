@@ -8,3 +8,4 @@ KeekAlive
 build
 packages
 *.suo
+*.InstallLog
