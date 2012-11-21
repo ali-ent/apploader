@@ -9,3 +9,4 @@ build
 packages
 *.suo
 *.InstallLog
+temp

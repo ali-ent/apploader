@@ -62,6 +62,7 @@ namespace Taobao.Infrastructure.Toolkit.AppDomains
         /// 程序集目录组的根路径，如：c:/root/
         /// </summary>
         private string _root;
+        private bool _auto;
         /// <summary>
         /// 应用程序 键=AppDomain名称
         /// </summary>
@@ -73,10 +74,12 @@ namespace Taobao.Infrastructure.Toolkit.AppDomains
         /// </summary>
         /// <param name="root">程序集目录组的根路径，如：c:/root/</param>
         /// <param name="log"></param>
-        public AppDomainLoader(string root, ILog log)
+        /// <param name="auto">是否自动检测root以及app目录变更</param>
+        public AppDomainLoader(string root, ILog log, bool auto)
         {
             this._log = log;
             this._root = root;
+            this._auto = auto;
             this._counter = 0;
             this._apps = new Dictionary<string, App>();
             this._shadowCopyPath = Path.Combine(this._root, _shadowcopy);
@@ -104,6 +107,30 @@ namespace Taobao.Infrastructure.Toolkit.AppDomains
         public void Clear()
         {
             this._apps.Keys.ToList().ForEach(o => this.Unload(this._apps[o]));
+        }
+        //TODO:由于为多进程支持改造，此方法的公开导致该类行为的模糊，需重构此类
+        /// <summary>
+        /// 从指定目录加载应用
+        /// </summary>
+        /// <param name="assemblyPath"></param>
+        public void LoadFrom(string assemblyPath)
+        {
+            var app = new App() { Path = assemblyPath, Key = _friendlyName + (++this._counter) };
+            //初始化AppDomain
+            this.PrepareAppDomain(app);
+            //初始化目录监控
+            this.PrepareWatcher(app);
+            //加入缓存
+            this._apps.Add(app.Key, app);
+            //加载程序集
+            Directory.GetFiles(assemblyPath
+                , _file_dll
+                , SearchOption.AllDirectories)
+                .ToList()
+                .ForEach(o => this.LoadTo(app, o));
+            //尝试入口初始化
+            this.Main(app);
+            this._log.InfoFormat("AppDomain#{0}初始化完毕", app.Key);
         }
         /// <summary>
         /// 重新加载指定应用
@@ -192,25 +219,6 @@ namespace Taobao.Infrastructure.Toolkit.AppDomains
                 return false;
             }
         }
-        private void LoadFrom(string assemblyPath)
-        {
-            var app = new App() { Path = assemblyPath, Key = _friendlyName + (++this._counter) };
-            //初始化AppDomain
-            this.PrepareAppDomain(app);
-            //初始化目录监控
-            this.PrepareWatcher(app);
-            //加入缓存
-            this._apps.Add(app.Key, app);
-            //加载程序集
-            Directory.GetFiles(assemblyPath
-                , _file_dll
-                , SearchOption.AllDirectories)
-                .ToList()
-                .ForEach(o => this.LoadTo(app, o));
-            //尝试入口初始化
-            this.Main(app);
-            this._log.InfoFormat("AppDomain#{0}初始化完毕", app.Key);
-        }
         private void Main(App app)
         {
             if (string.IsNullOrEmpty(app.EntranceTypeName))
@@ -281,6 +289,7 @@ namespace Taobao.Infrastructure.Toolkit.AppDomains
         }
         private void PrepareWatcher(App app)
         {
+            if (!this._auto) return;
             var watcher = new FileSystemWatcher(app.Path, _file_watch);
             watcher.IncludeSubdirectories = true;
             watcher.EnableRaisingEvents = true;
@@ -310,7 +319,7 @@ namespace Taobao.Infrastructure.Toolkit.AppDomains
         }
         private void PrepareRootWatcher()
         {
-            if (this._rootWatcher != null) return;
+            if (!this._auto || this._rootWatcher != null) return;
             var watcher = new FileSystemWatcher(this._root);
             watcher.IncludeSubdirectories = false;
             watcher.EnableRaisingEvents = true;

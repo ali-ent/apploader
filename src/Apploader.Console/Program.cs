@@ -38,6 +38,7 @@ namespace Apploader.Console
         static AppDomainLoader _loader;
         static ILog _log;
         static FileStream _file;
+        static bool _single;
         static void Main(string[] args)
         {
             WriteTip("服务动态发布宿主启动");
@@ -45,7 +46,11 @@ namespace Apploader.Console
             TryKeekAlive();
 
             //配置初始化
-            Start();
+            //为支持多进程特性 by wsky 2012-11-21
+            if (args != null && args.Length > 0 && (Program._single = true))
+                Start(args[0], false);
+            else
+                Start();
 
             //简单cmd处理
             while (true)
@@ -121,21 +126,28 @@ namespace Apploader.Console
             return false;
         }
 
+        //保持原有行为，非多进程支持
         public static void Start()
+        {
+            Program.Start(ConfigurationManager.AppSettings["serviceRoot"], true);
+        }
+        public static void Start(string root, bool auto)
         {
             PrepareErrorHandle();
 
-            var root = ConfigurationManager.AppSettings["serviceRoot"];
             Directory.CreateDirectory(root);
             //配置初始化
             log4net.Config.XmlConfigurator.Configure();
             //特化的log
             var log = new Log4NetLogger(log4net.LogManager.GetLogger(typeof(Program)));
             Program._log = new AgentHandlerLog(log);
-            
-            _loader = new AppDomainLoader(root, Program._log);
-            WriteTip("开始扫描发布目录：" + ConfigurationManager.AppSettings["serviceRoot"], true);
-            _loader.Scan();
+
+            _loader = new AppDomainLoader(root, Program._log, auto);
+            WriteTip("开始扫描发布目录：" + root, true);
+            if (!Program._single)
+                _loader.Scan();
+            else
+                _loader.LoadFrom(root);
             WriteTip("扫描完毕", true);
 
             if (!Convert.ToBoolean(ConfigurationManager.AppSettings["appAgent_enable"])) return;
@@ -201,10 +213,12 @@ namespace Apploader.Console
             }
             private void Scan(StreamWriter writer, params string[] args)
             {
+                if (Program._single) return;
                 _loader.Scan();
             }
             private void Refresh(StreamWriter writer, params string[] args)
             {
+                if (Program._single) return;
                 _loader.Clear();
                 _loader.Scan();
             }
