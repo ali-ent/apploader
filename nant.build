@@ -27,9 +27,6 @@
     <exec program="${msbuild}"
           commandline="${msbuild.params} ${msbuild.params.output}\apploader"
           workingdir="${dir}\src\Apploader.WinService" />
-    <exec program="${msbuild}"
-          commandline="${msbuild.params} ${msbuild.params.output}\apploader"
-          workingdir="${dir}\src\Apploader.WinService" />
     <delete dir="${build.absolutepath}\apploader\bin" />
     <delete>
       <fileset>
@@ -45,6 +42,30 @@
           commandline="${msbuild.params} ${msbuild.params.output}\demo\app"
           workingdir="${dir}\samples\DemoApp" />
     <xmlpoke file="${build.absolutepath}\apploader\Apploader.Console.exe.config"
+             xpath="/configuration/appSettings/add[@key='serviceRoot']/@value"
+             value="${build.absolutepath}\demo" />
+  </target>
+  <target name="appserver" description="appserver">
+    <exec program="${msbuild}"
+          commandline="${msbuild.params} ${msbuild.params.output}\apploader"
+          workingdir="${dir}\src\Apploader.WinService" />
+    <exec program="${msbuild}"
+          commandline="${msbuild.params} ${msbuild.params.output}\appserver"
+          workingdir="${dir}\src\AppServer.Console" />
+    <!--demo-->
+    <exec program="${msbuild}"
+          commandline="${msbuild.params} ${msbuild.params.output}\demo\app01"
+          workingdir="${dir}\samples\DemoApp" />
+    <exec program="${msbuild}"
+          commandline="${msbuild.params} ${msbuild.params.output}\demo\app02"
+          workingdir="${dir}\samples\DemoApp" />
+    <xmlpoke file="${build.absolutepath}\apploader\Apploader.Console.exe.config"
+             xpath="/configuration/appSettings/add[@key='appAgent_enable']/@value"
+             value="false" />
+    <xmlpoke file="${build.absolutepath}\appserver\AppServer.Console.exe.config"
+             xpath="/configuration/appSettings/add[@key='apploader']/@value"
+             value="${build.absolutepath}\apploader\Apploader.Console.exe" />
+    <xmlpoke file="${build.absolutepath}\appserver\AppServer.Console.exe.config"
              xpath="/configuration/appSettings/add[@key='serviceRoot']/@value"
              value="${build.absolutepath}\demo" />
   </target>

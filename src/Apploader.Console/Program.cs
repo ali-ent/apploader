@@ -43,14 +43,16 @@ namespace Apploader.Console
         {
             WriteTip("服务动态发布宿主启动");
             WriteTip("请求启动锁定");
-            TryKeekAlive();
-
+            
             //配置初始化
             //为支持多进程特性 by wsky 2012-11-21
             if (args != null && args.Length > 0 && (Program._single = true))
                 Start(args[0], false);
             else
+            {
+                TryKeekAlive();
                 Start();
+            }
 
             //简单cmd处理
             while (true)
