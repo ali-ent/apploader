@@ -15,6 +15,14 @@ One folder run as an app.
 
 One process host multiple applications (run as appdomain).
 
+## AppServer
+
+New feature for multi-process support.
+
+```shell
+run_appserver.ps1
+```
+
 ## Build
 
 Depends on 
